@@ -18,7 +18,7 @@ module.exports.showListing=async (req,res)=>{
     }).populate("owner");
     if(!listing){
         req.flash("error","Listing you required for does not exist!");
-        res.redirect("/listings");
+        return res.redirect("/listings");
     }
     console.log(listing);
     res.render("listings/show.ejs",{listing,mapToken: process.env.MAP_TOKEN});
@@ -90,7 +90,7 @@ module.exports.editListing=async (req,res)=>{
     const listing=await Listing.findById(id);
     if(!listing){
         req.flash("error","Listing you required for does not exist!");
-        res.redirect("/listings");
+        return res.redirect("/listings");
     }
     let originalImageUrl= listing.image.url;
     originalImageUrl= originalImageUrl.replace("/upload","/upload/w_250");
@@ -147,10 +147,13 @@ module.exports.updateListing = async (req, res) => {
 };
 
 
-module.exports.deleteListing=async (req,res)=>{
-    let {id}=req.params;
-    let deleted= await Listing.findByIdAndDelete(id);
-    console.log(deleted);
-    req.flash("success","Listing Deleted!");
+module.exports.deleteListing = async (req, res) => {
+    let { id } = req.params;
+    const deleted = await Listing.findByIdAndDelete(id);
+    if (!deleted) {
+        req.flash("error", "Listing not found!");
+        return res.redirect("/listings");
+    }
+    req.flash("success", "Listing Deleted!");
     res.redirect("/listings");
 };
